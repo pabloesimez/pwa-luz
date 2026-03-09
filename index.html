@@ -13,7 +13,7 @@
   <script>
     async function cargarDatos() {
       // URL de tu Google Sheets publicado como CSV
-      const url = "TU_URL_SHEET_PUBLICADO";
+      const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwc9KGRodoGNmvrL1Bh9xH5morQb7ltjFcSFJ0k2xCQO7-lurEjLuxtiaX46zhNQ_SIOU3_J08Ocr2/pub?gid=0&single=true&output=csv";
       const response = await fetch(url);
       const data = await response.text();
 
@@ -52,3 +52,4 @@
   </script>
 </body>
 </html>
+
