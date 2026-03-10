@@ -1,55 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>PWA Luz Solar</title>
-  <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <h2>Mediciones de Luz en Tiempo Real</h2>
-  <canvas id="graficaLuz"></canvas>
-
-  <script>
-    async function cargarDatos() {
-      // URL de tu Google Sheets publicado como CSV
-      const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwc9KGRodoGNmvrL1Bh9xH5morQb7ltjFcSFJ0k2xCQO7-lurEjLuxtiaX46zhNQ_SIOU3_J08Ocr2/pub?gid=0&single=true&output=csv";
-      const response = await fetch(url);
-      const data = await response.text();
-
-      const filas = data.split("\n").slice(1); // saltar encabezado
-      const fechas = [];
-      const valores = [];
-
-      filas.forEach(fila => {
-        const columnas = fila.split(",");
-        if (columnas.length >= 2) {
-          fechas.push(columnas[0]);     // fecha/hora
-          valores.push(parseFloat(columnas[1])); // lux
-        }
-      });
-
-      new Chart(document.getElementById("graficaLuz"), {
-        type: "line",
-        data: {
-          labels: fechas,
-          datasets: [{
-            label: "Nivel de luz (lux)",
-            data: valores,
-            borderColor: "blue",
-            fill: false
-          }]
-        }
-      });
-    }
-
-    cargarDatos();
-
-    // Registrar Service Worker
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js");
-    }
-  </script>
-</body>
-</html>
-
+<div id="data-container">
+  <button onclick="cargarDatos()">Actualizar Datos</button>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Hora</th>
+        <th>Valor LDR</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-cuerpo"></tbody>
+  </table>
+</div>
