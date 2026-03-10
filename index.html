@@ -1,13 +1,74 @@
-<div id="data-container">
-  <button onclick="cargarDatos()">Actualizar Datos</button>
-  <table border="1">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Hora</th>
-        <th>Valor LDR</th>
-      </tr>
-    </thead>
-    <tbody id="tabla-cuerpo"></tbody>
-  </table>
-</div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Luz ESP32</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f4f4f9; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; }
+        canvas { max-width: 100%; height: 300px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Nivel de Luz (LDR)</h1>
+        <button onclick="cargarDatos()">Actualizar Ahora</button>
+        <canvas id="graficaLuz"></canvas>
+        <p id="ultimo-valor">Cargando datos...</p>
+    </div>
+
+    <script>
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbw7s5frD5Gq5smD_j2LAv9EH23-mPrLTpvQ5mhNMOCOMvneiXkhf8jKHpn7gAEBlT0z/exec";
+        let miGrafica;
+
+        async function cargarDatos() {
+            try {
+                const res = await fetch(URL_SCRIPT + "?read=true");
+                const datos = await res.json();
+                
+                // Tomamos los últimos 20 registros
+                const ultimosDatos = datos.slice(-20);
+                const etiquetas = ultimosDatos.map(d => d.hora);
+                const valores = ultimosDatos.map(d => d.lux);
+
+                document.getElementById('ultimo-valor').innerText = `Última lectura: ${valores[valores.length-1]} unidades`;
+
+                actualizarGrafica(etiquetas, valores);
+            } catch (err) {
+                console.error("Error:", err);
+            }
+        }
+
+        function actualizarGrafica(etiquetas, valores) {
+            const ctx = document.getElementById('graficaLuz').getContext('2d');
+            if (miGrafica) miGrafica.destroy();
+            
+            miGrafica = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: etiquetas,
+                    datasets: [{
+                        label: 'Intensidad de Luz',
+                        data: valores,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                }
+            });
+        }
+
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        window.onload = cargarDatos;
+    </script>
+</body>
+</html>
